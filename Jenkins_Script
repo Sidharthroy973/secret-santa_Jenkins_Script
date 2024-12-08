@@ -49,7 +49,9 @@ pipeline {
         }
         stage('docker run'){
             steps  {
+                withDockerRegistry(credentialsId: 'docker_id', url: 'https://index.docker.io') {
                     sh "docker run -d -p 8000:8000 sidharthroy973/secret-santa:latest"
+                }
             }
         }
     }
@@ -58,3 +60,8 @@ pipeline {
 sonar.host.url=http://13.200.13.93:9000
 
 sudo find / -name "sonar.properties"
+
+To add jenkins user to docker group to jenkins has rights to run command in docker.
+ps aux | grep jenkins
+ sudo usermod -aG docker jenkins
+  sudo systemctl restart jenkins

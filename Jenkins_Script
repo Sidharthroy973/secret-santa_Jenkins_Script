@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+    
+    tools {
+        jdk "jdk11"
+        maven "maven3"
+    }
+
+    environment {
+        SCANNER_HOME = tool "sonar-scanner"
+    }   
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git 'https://github.com/jaiswaladi246/secretsanta-generator.git'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh "mvn clean compile" 
+            }
+        }
+
+        stage('Sonarcube Analysis') {
+            steps {
+                sh '''/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/sonar-scanner/bin/sonar-scanner \
+                        -Dsonar.url=http://13.200.13.93:9000 \
+                        -Dsonar.login=squ_993fb8b8c2739664647c24f6cd0190486ee90e20 \
+                        -Dsonar.projectName=secret-santa \
+                        -Dsonar.java.binaries=target/classes \
+                        -Dsonar.projectKey=secret-santa'''
+            }
+        }
+        
+        stage('Owasp_Scan'){
+            steps {
+                 dependencyCheck additionalArguments: '--scan ./',odcInstallation:'DP'
+            }
+        }
+    }
+}
+
+/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/sonar-scanner/conf/sonar-scanner.properties
+sudo find / -name "sonar.properties"

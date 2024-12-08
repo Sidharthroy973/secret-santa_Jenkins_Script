@@ -26,21 +26,35 @@ pipeline {
         stage('Sonarcube Analysis') {
             steps {
                 sh '''/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/sonar-scanner/bin/sonar-scanner \
-                        -Dsonar.url=http://13.200.13.93:9000 \
+                        -Dsonar.url=http://3.7.54.35:9000 \
                         -Dsonar.login=squ_993fb8b8c2739664647c24f6cd0190486ee90e20 \
                         -Dsonar.projectName=secret-santa \
                         -Dsonar.java.binaries=target/classes \
                         -Dsonar.projectKey=secret-santa'''
             }
         }
-        
-        stage('Owasp_Scan'){
+        stage('Build') {
             steps {
-                 dependencyCheck additionalArguments: '--scan ./',odcInstallation:'DP'
+                sh "mvn clean install" 
+            }
+        }
+        stage('docker Build and Push'){
+            steps {
+                withDockerRegistry(credentialsId: 'docker_id', url: 'https://index.docker.io') {
+                    sh "docker build -t santa . "
+                    sh "docker tag santa sidharthroy973/secret-santa:latest"
+                    sh "docker push sidharthroy973/secret-santa:latest "
+                }
+            }
+        }
+        stage('docker run'){
+            steps  {
+                    sh "docker run -d -p 8000:8000 sidharthroy973/secret-santa:latest"
             }
         }
     }
 }
-
 /var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/sonar-scanner/conf/sonar-scanner.properties
+sonar.host.url=http://13.200.13.93:9000
+
 sudo find / -name "sonar.properties"
